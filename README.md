@@ -7,9 +7,9 @@
 - [x] ECC-P256
 
 ### Implementation of Post-Quantum Crytography
-- [ ] ML-KEM
-- [ ] ML-DSA
-- [ ] SLH-DSA
+- [x] ML-KEM
+- [x] ML-DSA
+- [x] SLH-DSA
 
 ### Implementation of Quantum Algorithms
 - [ ] Shor's
