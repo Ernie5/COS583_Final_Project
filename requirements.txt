@@ -1,0 +1,5 @@
+ecdsa==0.19.1
+mpmath==1.3.0
+pycryptodome==3.22.0
+six==1.17.0
+sympy==1.13.3
