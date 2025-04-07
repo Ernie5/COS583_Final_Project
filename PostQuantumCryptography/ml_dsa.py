@@ -10,7 +10,7 @@ def benchmark(func, *args):
 
 def ml_dsa_demo():
     # Choose the ML-DSA variant (Dilithium-5 for max security)
-    dsa_alg = "ML-DSA-5"
+    dsa_alg = "ML-DSA-87"
 
     print(f" Using PQC Algorithm: {dsa_alg}")
 

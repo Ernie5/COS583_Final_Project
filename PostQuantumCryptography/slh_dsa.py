@@ -10,7 +10,9 @@ def benchmark(func, *args):
 
 def slh_dsa_demo():
     # Choose the SLH-DSA variant (SPHINCS+-SHAKE-256s-simple)
-    dsa_alg = "SLH-DSA-256s"
+    # To see different variants
+    # print(oqs.get_enabled_sig_mechanisms())
+    dsa_alg = "SPHINCS+-SHAKE-256s-simple"
 
     print(f" Using PQC Algorithm: {dsa_alg}")
 
