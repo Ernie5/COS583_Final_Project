@@ -31,21 +31,29 @@ def encrypt():
         encrypted = rsa.encrypt(message, public_key)
         decrypted = rsa.decrypt(encrypted, private_key)
         result = {
-            'encrypted': str(encrypted),
+            'encrypted': rsa.encode_cipher(encrypted),
             'decrypted': decrypted,
-            'public_key': str(public_key),
-            'private_key': str(private_key)
+            'public_key': rsa.str_public(public_key),
+            'private_key': rsa.str_private(private_key)
         }
 
     elif algorithm == 'aes':
         key = aes.generate_key()
-        encrypted = aes.encrypt(message, key)
+        encrypted, iv_b64 = aes.encrypt(message, key)
+        key_b64 = base64.b64encode(key).decode()
+        key_hex = key.hex()
+
         decrypted = aes.decrypt(encrypted, key)
         result = {
-            'AES Key (Base64, for export)': base64.b64encode(key).decode(),
-            'AES Key (Hex, 256-bit)': key.hex(),
-            'Encrypted': encrypted,
-            'Decrypted': decrypted
+            'AES Key (Base64, 256-bit)': key_b64,
+            'AES Key (Hex, 256-bit)': key_hex,
+            'IV (Base64)': iv_b64,
+            'Encrypted (Base64, IV+ciphertext)': encrypted,
+            'Decrypted': decrypted,
+            'Key': key,
+            'Key length (bytes)': len(key),
+            'Key length (Base64)': len(key_b64),
+            'IV length (Base64)': len(iv_b64),
         }
 
     elif algorithm == 'dh':
