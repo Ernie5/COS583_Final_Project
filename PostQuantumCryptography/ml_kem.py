@@ -42,4 +42,4 @@ def ml_kem_demo():
         print(f" Ciphertext (truncated): {ciphertext.hex()[:64]}...")
 
 # Run the test
-ml_kem_demo()
+# ml_kem_demo()

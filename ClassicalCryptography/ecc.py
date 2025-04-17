@@ -17,10 +17,10 @@ class ECC_P256:
         return self.public_key.verify(signature, hash_msg)
 
 # Example Usage
-ecc = ECC_P256()
-message = b"Hello, ECC-P256!"
-signature = ecc.sign(message)
-print("Signature:", signature.hex())
+# ecc = ECC_P256()
+# message = b"Hello, ECC-P256!"
+# signature = ecc.sign(message)
+# print("Signature:", signature.hex())
 
-is_valid = ecc.verify(message, signature)
-print("Signature Valid:", is_valid)
+# is_valid = ecc.verify(message, signature)
+# print("Signature Valid:", is_valid)

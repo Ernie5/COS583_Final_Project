@@ -43,4 +43,4 @@ def ml_dsa_demo():
         print(f" Original Message: {message.decode()}")
 
 # Run the ML-DSA test
-ml_dsa_demo()
+# ml_dsa_demo()

@@ -45,4 +45,4 @@ def slh_dsa_demo():
         print(f" Original Message: {message.decode()}")
 
 # Run the SLH-DSA test
-slh_dsa_demo()
+# slh_dsa_demo()

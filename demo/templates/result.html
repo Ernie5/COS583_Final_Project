@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Encryption Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Result</h1>
+        {% for key, value in result.items() %}
+            <p><strong>{{ key | capitalize }}:</strong> {{ value }}</p>
+        {% endfor %}
+        <a href="/">Back</a>
+    </div>
+</body>
+</html>

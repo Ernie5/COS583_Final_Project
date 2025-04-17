@@ -1,47 +1,38 @@
-import random
-import sympy
-from Crypto.Util.number import getPrime, inverse, bytes_to_long, long_to_bytes
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Random import get_random_bytes
 
-def generate_keys(bits=4096):
-    """Generate an RSA key pair with the given bit size."""
-    e = 65537  # Commonly used public exponent
-    
-    # Generate two large prime numbers
-    p = getPrime(bits // 2)
-    q = getPrime(bits // 2)
-    
-    n = p * q
-    phi = (p - 1) * (q - 1)
-    
-    # Compute the modular inverse of e modulo phi(n)
-    d = inverse(e, phi)
-    
-    public_key = (n, e)
-    private_key = (n, d)
-    
-    return public_key, private_key
+def generate_keys_pem(bits=4096):
+    """Generate RSA key pair and return them in PEM format."""
+    key = RSA.generate(bits)
+    private_pem = key.export_key().decode()
+    public_pem = key.publickey().export_key().decode()
+    return public_pem, private_pem
 
-def encrypt(message, public_key):
-    """Encrypt a message using the public key."""
-    n, e = public_key
-    message_int = bytes_to_long(message.encode())
-    cipher_int = pow(message_int, e, n)
-    return cipher_int
+def encrypt(message, public_pem):
+    """Encrypt a message using a PEM-encoded public key."""
+    pub_key = RSA.import_key(public_pem)
+    cipher = PKCS1_OAEP.new(pub_key)
+    encrypted = cipher.encrypt(message.encode())
+    return encrypted
 
-def decrypt(cipher_int, private_key):
-    """Decrypt a message using the private key."""
-    n, d = private_key
-    message_int = pow(cipher_int, d, n)
-    message = long_to_bytes(message_int).decode()
-    return message
+def decrypt(ciphertext, private_pem):
+    """Decrypt a message using a PEM-encoded private key."""
+    priv_key = RSA.import_key(private_pem)
+    cipher = PKCS1_OAEP.new(priv_key)
+    decrypted = cipher.decrypt(ciphertext)
+    return decrypted.decode()
 
 # Example usage
 if __name__ == "__main__":
-    pub_key, priv_key = generate_keys()
-    
-    message = "Hello, RSA-4096!"
-    cipher = encrypt(message, pub_key)
-    decrypted_message = decrypt(cipher, priv_key)
-    
+    pub_pem, priv_pem = generate_keys_pem()
+
+    message = "Hello, RSA-PEM!"
+    cipher = encrypt(message, pub_pem)
+    print("Encrypted:", cipher)
+    decrypted_message = decrypt(cipher, priv_pem)
+
+    print("Public Key PEM:\n", pub_pem)
+    print("Private Key PEM:\n", priv_pem)
     print(f"Original: {message}")
     print(f"Decrypted: {decrypted_message}")

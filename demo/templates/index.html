@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cryptography Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Encrypt Your Message</h1>
+        <form action="/encrypt" method="post">
+            <label for="message">Message:</label><br>
+            <textarea name="message" rows="5" required></textarea><br>
+
+            <label for="algorithm">Choose Algorithm:</label>
+            <select name="algorithm" required>
+                <option value="rsa">RSA</option>
+                <option value="aes">AES</option>
+                <option value="ecc">ECC</option>
+                <option value="dh">DiffieHellman</option>
+                <option value="ml_dsa">ML-DSA</option>
+                <option value="slh_dsa">SLH-DSA</option>
+                <option value="ml_kem">ML-KEM</option>
+            </select><br>
+
+            <button type="submit">Encrypt</button>
+        </form>
+    </div>
+</body>
+</html>
