@@ -79,16 +79,30 @@ def encrypt():
 
     elif algorithm == 'ecc':
         ecc_obj = ecc.ECC_P256()
-        message_bytes = message.encode()
-        signature = ecc_obj.sign(message_bytes)
-        is_valid = ecc_obj.verify(message_bytes, signature)
+        result = ecc_obj.run(message)
 
-        result = {
+        original_signature = base64.b64decode(result['Signature (Base64)'])
+        original_message_bytes = message.encode()
+
+        # Verify on original message with original key
+        is_valid_original = ecc_obj.verify(original_message_bytes, original_signature)
+
+        # Tampered message test
+        tampered_message = message + " (tampered)"
+        is_valid_tampered = ecc_obj.verify(tampered_message.encode(), original_signature)
+
+        # Forged signature: create new key pair, sign same message, and try to verify using original public key
+        forged_ecc = ecc.ECC_P256()
+        forged_signature = forged_ecc.sign(original_message_bytes)
+        is_valid_forged = ecc_obj.verify(original_message_bytes, forged_signature)
+
+        result.update({
             'Algorithm': 'ECC-P256 (NIST Curve)',
-            'Signature Valid': str(is_valid),
-            'Message': message,
-            'Signature (hex)': signature.hex()
-        }
+            'Signature Valid (Original)': str(is_valid_original),
+            'Signature Valid (Tampered)': str(is_valid_tampered),
+            'Signature Valid (Forged with Different Key)': str(is_valid_forged),
+            'Tampered Message': tampered_message
+        })
 
     elif algorithm == 'ml_dsa':
         dsa_alg = "ML-DSA-87"
