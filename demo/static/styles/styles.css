@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background: url('/static/swirl-bg-2.png') center/cover no-repeat fixed;
+    color: #f3f3f3;
+    margin: 0;
+    padding: 40px 0;
+    display: block; /* instead of flex */
+    min-height: 100vh;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-color: rgba(14, 16, 28, 0.7);
+    z-index: -1;
+}
+
+body::after {
+    content: '';
+    display: block;
+    height: 100px;
+}
+
+.container {
+    background: linear-gradient(145deg, #1c1b29, #2a1f3d);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    width: 90%;
+    max-width: 900px; /* wider than before */
+    margin: 0 auto;   /* horizontally center on scrollable page */
+    animation: fadeInUp 0.7s ease-out;
+}
+
+h1 {
+    font-size: 2rem;
+    color: #ffbe3d;
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    text-align: left;
+    margin-top: 20px;
+    margin-bottom: 5px;
+    color: #ffdf91;
+    font-weight: 700;
+}
+
+textarea, select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background-color: #2a2f4a;
+    color: #ffffff;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    transition: 0.3s ease;
+}
+
+textarea:focus, select:focus {
+    outline: none;
+    background-color: #364164;
+    border: 1px solid #ff914d;
+}
+
+button {
+    width: 100%;
+    margin-top: 25px;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #ff914d, #e03a3a);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #e03a3a, #ff914d);
+    transform: translateY(-2px);
+}
+
+@keyframes fadeInUp {
+    0% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.container {
+    animation: fadeInUp 0.7s ease-out;
+}
+
+/* Styling for result content */
+.container h1 {
+    font-size: 2rem;
+    color: #ffbe3d;
+    margin-bottom: 25px;
+}
+
+.container p {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    color: #f3f3f3;
+    line-height: 1.4;
+}
+
+.result-block {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    color: #f3f3f3;
+    line-height: 1.4;
+    overflow-x: auto;
+    word-break: break-word;
+    white-space: pre-wrap;
+    position: relative;
+    transition: background 0.3s ease;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.result-block:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.result-block::after {
+    content: 'Click to copy';
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 0.7rem;
+    color: #ffbe3d;
+    opacity: 0.6;
+}
+
+
+.container a {
+    display: inline-block;
+    margin-top: 20px;
+    color: #ff914d;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.container a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}

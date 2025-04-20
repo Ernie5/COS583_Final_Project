@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Encryption Result</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styles.css') }}">
 </head>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
 <body>
     <div class="container">
-        <h1>Result</h1>
+        <h1>Encryption Result</h1>
         {% for key, value in result.items() %}
-            <p><strong>{{ key | capitalize }}:</strong> {{ value }}</p>
+        <div class="result-block">
+            <strong>{{ key | capitalize }}:</strong><br>{{ value }}
+        </div>
         {% endfor %}
-        <a href="/">Back</a>
+        <a href="/">← Back to Encrypt</a>
     </div>
 </body>
 </html>
