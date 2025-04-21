@@ -56,23 +56,26 @@ Ensure you have the following installed on your machine:
 
     ```
     cd desired-project-destination
-    git clone https://github.com/Ernie5/COS583_Final_Project
-    cd desired-project-destination/COS583_Final_Project
+    git clone --recurse-submodules https://github.com/Ernie5/COS583_Final_Project
+    cd COS583_Final_Project
     ```
 
 2. **Create a Virtual Environment**
     Run the following command to create your own virtual environment for this project
     ```
-    python -m venv COS583_Final_Project
-    source/bin/ activate
+    python -m venv .
+    source bin/activate
     ```
 
 
 3. **Install Dependencies**
-    Run the following command to install required libraries:
+    Install `cmake` from `https://cmake.org/download/`.
+    Then run the following command to install required libraries:
     
     ```
-    pip install requirements.txt
+    pip install -r requirements.txt
+    cd liboqs-python
+    pip install .
     ```
 
 4. **Run the Project**

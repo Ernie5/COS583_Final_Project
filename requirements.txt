@@ -6,7 +6,6 @@ ecdsa==0.19.1
 Flask==3.1.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
-liboqs-python @ file:///Users/ernestomoreno/Downloads/COS583/Final_Project/COS583_Final_Project/liboqs-python
 MarkupSafe==3.0.2
 mpmath==1.3.0
 pycparser==2.22

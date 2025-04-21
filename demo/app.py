@@ -26,18 +26,7 @@ def encrypt():
     message = request.form['message']
     result = ""
 
-    if algorithm == 'rsa':
-        public_key, private_key = rsa.generate_keys()
-        encrypted = rsa.encrypt(message, public_key)
-        decrypted = rsa.decrypt(encrypted, private_key)
-        result = {
-            'encrypted': rsa.encode_cipher(encrypted),
-            'decrypted': decrypted,
-            'public_key': rsa.str_public(public_key),
-            'private_key': rsa.str_private(private_key)
-        }
-
-    elif algorithm == 'aes':
+    if algorithm == 'aes':
         key = aes.generate_key()
         encrypted, iv_b64 = aes.encrypt(message, key)
         key_b64 = base64.b64encode(key).decode()
@@ -75,6 +64,17 @@ def encrypt():
             'Bob Public Key': str(bob.public_key),
             'Shared Secret Match': str(alice_shared == bob_shared),
             'Shared Secret (truncated)': str(alice_shared)[:64] + "..."
+        }
+
+    elif algorithm == 'rsa':
+        public_key, private_key = rsa.generate_keys()
+        encrypted = rsa.encrypt(message, public_key)
+        decrypted = rsa.decrypt(encrypted, private_key)
+        result = {
+            'encrypted': rsa.encode_cipher(encrypted),
+            'decrypted': decrypted,
+            'public_key': rsa.str_public(public_key),
+            'private_key': rsa.str_private(private_key)
         }
 
     elif algorithm == 'ecc':
