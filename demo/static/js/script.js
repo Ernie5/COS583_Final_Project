@@ -3,7 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     blocks.forEach(block => {
         block.addEventListener("click", () => {
-            const text = block.innerText;
+            const value = block.querySelector(".result-value");
+            const text = value.innerText;
             navigator.clipboard.writeText(text).then(() => {
                 block.classList.add("copied");
                 block.setAttribute("data-original", block.innerHTML);

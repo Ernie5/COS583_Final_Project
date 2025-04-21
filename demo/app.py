@@ -43,6 +43,8 @@ def encrypt():
             'Key length (bytes)': len(key),
             'Key length (Base64)': len(key_b64),
             'IV length (Base64)': len(iv_b64),
+            'padding': 'PKCS7',
+            'AES Mode': 'CBC'
         }
 
     elif algorithm == 'dh':
@@ -73,8 +75,9 @@ def encrypt():
         result = {
             'encrypted': rsa.encode_cipher(encrypted),
             'decrypted': decrypted,
-            'public_key': rsa.str_public(public_key),
-            'private_key': rsa.str_private(private_key)
+            'public key': rsa.str_public(public_key),
+            'private key': rsa.str_private(private_key),
+            'Padding': 'PKCS1v15'
         }
 
     elif algorithm == 'ecc':
@@ -98,10 +101,10 @@ def encrypt():
 
         result.update({
             'Algorithm': 'ECC-P256 (NIST Curve)',
+            'Tampered Message': tampered_message,
             'Signature Valid (Original)': str(is_valid_original),
             'Signature Valid (Tampered)': str(is_valid_tampered),
-            'Signature Valid (Forged with Different Key)': str(is_valid_forged),
-            'Tampered Message': tampered_message
+            'Signature Valid (Forged with Different Key)': str(is_valid_forged)
         })
 
     elif algorithm == 'ml_dsa':

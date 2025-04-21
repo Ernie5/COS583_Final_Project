@@ -6,14 +6,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/styles.css') }}">
 </head>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 <body>
     <div class="container">
         <h1>Encryption Result</h1>
         {% for key, value in result.items() %}
         <div class="result-block">
-            <strong>{{ key | capitalize }}:</strong><br>{{ value }}
+            <strong>{{ key | capitalize }}:</strong><br>
+            <span class="result-value">{{ value }}</span>
         </div>
         {% endfor %}
         <a href="/">← Back to Encrypt</a>
