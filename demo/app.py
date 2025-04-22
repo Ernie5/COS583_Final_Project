@@ -13,7 +13,7 @@ sys.path.append(os.path.join(project_root, 'ClassicalCryptography'))
 sys.path.append(os.path.join(project_root, 'PostQuantumCryptography'))
 
 # Import your crypto modules
-import aes, rsa, dh, ecc
+import aes_simple as aes, rsa, dh, ecc
 import ml_kem, ml_dsa, slh_dsa
 
 @app.route('/')
@@ -27,24 +27,16 @@ def encrypt():
     result = ""
 
     if algorithm == 'aes':
-        key = aes.generate_key()
-        encrypted, iv_b64 = aes.encrypt(message, key)
-        key_b64 = base64.b64encode(key).decode()
-        key_hex = key.hex()
-
-        decrypted = aes.decrypt(encrypted, key)
+        key = aes.generate_printable_key()
+        encrypted = aes.encrypt(message, key.encode())
+        decrypted = aes.decrypt(encrypted, key.encode())
         result = {
-            'AES Key (Base64, 256-bit)': key_b64,
-            'AES Key (Hex, 256-bit)': key_hex,
-            'IV (Base64)': iv_b64,
-            'Encrypted (Base64, IV+ciphertext)': encrypted,
-            'Decrypted': decrypted,
+            'Message': message,
             'Key': key,
-            'Key length (bytes)': len(key),
-            'Key length (Base64)': len(key_b64),
-            'IV length (Base64)': len(iv_b64),
+            'Encrypted': encrypted,
+            'Decrypted': decrypted,
             'padding': 'PKCS7',
-            'AES Mode': 'CBC'
+            'AES Mode': 'ECB'
         }
 
     elif algorithm == 'dh':
@@ -102,9 +94,9 @@ def encrypt():
         result.update({
             'Algorithm': 'ECC-P256 (NIST Curve)',
             'Tampered Message': tampered_message,
-            'Signature Valid (Original)': str(is_valid_original),
-            'Signature Valid (Tampered)': str(is_valid_tampered),
-            'Signature Valid (Forged with Different Key)': str(is_valid_forged)
+            'Signature Valid Test with Original Message and Valid Key': str(is_valid_original),
+            'Signature Valid Test with Tampered Message and Valid Key': str(is_valid_tampered),
+            'Signature Valid Test with Original Message and Forged Key': str(is_valid_forged)
         })
 
     elif algorithm == 'ml_dsa':
@@ -112,32 +104,65 @@ def encrypt():
         with oqs.Signature(dsa_alg) as signer:
             public_key = signer.generate_keypair()
             signature = signer.sign(message.encode())
-            with oqs.Signature(dsa_alg) as verifier:
-                is_valid = verifier.verify(message.encode(), signature, public_key)
 
-            result = {
-                'Algorithm': dsa_alg,
-                'Signature Valid': str(is_valid),
-                'Message': message,
-                'Public Key (hex, truncated)': public_key.hex()[:64] + "...",
-                'Signature (hex, truncated)': signature.hex()[:64] + "..."
-            }
+            # Valid verification
+            with oqs.Signature(dsa_alg) as verifier:
+                is_valid_original = verifier.verify(message.encode(), signature, public_key)
+
+            # Tampered message test
+            tampered_message = message + " (tampered)"
+            with oqs.Signature(dsa_alg) as verifier:
+                is_valid_tampered = verifier.verify(tampered_message.encode(), signature, public_key)
+
+            # Forged signature test (new key pair)
+            with oqs.Signature(dsa_alg) as forger:
+                forged_public_key = forger.generate_keypair()
+                forged_signature = forger.sign(message.encode())
+                is_valid_forged = verifier.verify(message.encode(), forged_signature, public_key)
+
+        result = {
+            'Algorithm': dsa_alg,
+            'Signature Valid Test with Original Message and Valid Key': str(is_valid_original),
+            'Signature Valid Test with Tampered Message and Valid Key': str(is_valid_tampered),
+            'Signature Valid Test with Original Message and Forged Key': str(is_valid_forged),
+            'Message': message,
+            'Tampered Message': tampered_message,
+            'Public Key (hex, truncated)': public_key.hex()[:64] + "...",
+            'Signature (hex, truncated)': signature.hex()[:64] + "..."
+        }
+
 
     elif algorithm == 'slh_dsa':
         dsa_alg = "SPHINCS+-SHAKE-256s-simple"
         with oqs.Signature(dsa_alg) as signer:
             public_key = signer.generate_keypair()
             signature = signer.sign(message.encode())
-            with oqs.Signature(dsa_alg) as verifier:
-                is_valid = verifier.verify(message.encode(), signature, public_key)
 
-            result = {
-                'Algorithm': dsa_alg,
-                'Signature Valid': str(is_valid),
-                'Message': message,
-                'Public Key (hex, truncated)': public_key.hex()[:64] + "...",
-                'Signature (hex, truncated)': signature.hex()[:64] + "..."
-            }
+            # Valid verification
+            with oqs.Signature(dsa_alg) as verifier:
+                is_valid_original = verifier.verify(message.encode(), signature, public_key)
+
+            # Tampered message test
+            tampered_message = message + " (tampered)"
+            with oqs.Signature(dsa_alg) as verifier:
+                is_valid_tampered = verifier.verify(tampered_message.encode(), signature, public_key)
+
+            # Forged signature test (new key pair)
+            with oqs.Signature(dsa_alg) as forger:
+                forged_signature = forger.sign(message.encode())
+                is_valid_forged = verifier.verify(message.encode(), forged_signature, public_key)
+
+        result = {
+            'Algorithm': dsa_alg,
+            'Signature Valid Test with Original Message and Valid Key': str(is_valid_original),
+            'Signature Valid Test with Tampered Message and Valid Key': str(is_valid_tampered),
+            'Signature Valid Test with Original Message and Forged Key': str(is_valid_forged),
+            'Message': message,
+            'Tampered Message': tampered_message,
+            'Public Key (hex, truncated)': public_key.hex()[:64] + "...",
+            'Signature (hex, truncated)': signature.hex()[:64] + "..."
+        }
+
 
     elif algorithm == 'ml_kem':
         kem_alg = "ML-KEM-1024"

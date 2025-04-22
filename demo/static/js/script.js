@@ -32,6 +32,12 @@ document.getElementById('algorithm-select').addEventListener('change', function 
         messageContent.style.display = 'none';
         messageContent.value = 'DH';
         submitButton.innerText = 'Demo';
+    } else if (selectedAlgorithm === 'ml_kem') {
+        heading.innerText = 'Demo ML_KEM Key Exchange';
+        messageLabel.style.display = 'none';
+        messageContent.style.display = 'none';
+        messageContent.value = 'ML_KEM';
+        submitButton.innerText = 'Demo';
     } else {
         heading.innerText = 'Encrypt Your Message';
         messageLabel.style.display = 'block';
