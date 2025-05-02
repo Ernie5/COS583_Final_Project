@@ -8,26 +8,56 @@
 
 <body>
     <div class="container">
-        <h1 id="heading">Encrypt Your Message</h1>
-        <form action="/encrypt" method="post">
-            <label id="message-label" for="message">Message:</label>
-            <textarea id="message-content" name="message" rows="5" required></textarea>
-            <br>
-            <label for="algorithm">Choose Algorithm:</label>
-            <select id="algorithm-select" name="algorithm" required>
-                <option value="aes">AES</option>
-                <option value="dh">Diffie-Hellman</option>
-                <option value="rsa">RSA</option>
-                <option value="ecc">ECC</option>
-                <option value="ml_dsa">ML-DSA</option>
-                <option value="slh_dsa">SLH-DSA</option>
-                <option value="ml_kem">ML-KEM</option>
-            </select>
-
-            <button id="submit-button" type="submit">Encrypt</button>
-        </form>
+      <h1 id="heading">COS583 Encryption Visualizer</h1>
+    
+      <!-- 🔑  MAIN FORM  🔑 -->
+      <form action="/crypto" method="post" id="crypto-form">
+    
+        <!-- algorithm picker -->
+        <label for="algorithm">Choose Algorithm:</label>
+        <select id="algorithm-select" name="algorithm" required>
+          <option value="aes">AES</option>
+          <option value="rsa">RSA</option>
+          <option value="dh">Diffie-Hellman</option>
+          <option value="ecc">ECC</option>
+          <option value="ml_dsa">ML-DSA</option>
+          <option value="slh_dsa">SLH-DSA</option>
+          <option value="ml_kem">ML-KEM</option>
+        </select>
+    
+        <!-- encrypt vs decrypt -->
+        <fieldset id="op-fieldset">
+          <legend>Operation</legend>
+          <label><input type="radio" name="operation" value="encrypt" checked> Encrypt</label>
+          <label><input type="radio" name="operation" value="decrypt"> Decrypt</label>
+        </fieldset>
+    
+        <!-- plaintext (encrypt) -->
+        <div id="plain-group">
+          <label id="message-label" for="message">Plaintext:</label>
+          <textarea id="message-content" name="message" rows="5"></textarea>
+        </div>
+    
+        <!-- AES-decrypt extras -->
+        <div id="aes-extra" class="hidden">
+          <label for="aes_key">AES Key (32 chars):</label>
+          <input type="text" id="aes_key" name="aes_key" minlength="32" maxlength="32">
+          <label for="aes_cipher">Ciphertext (Base64):</label>
+          <textarea id="aes_cipher" name="aes_cipher" rows="3"></textarea>
+        </div>
+    
+        <!-- RSA-decrypt extras -->
+        <div id="rsa-extra" class="hidden">
+          <label for="rsa_priv">Private Key (PEM):</label>
+          <textarea id="rsa_priv" name="rsa_priv" rows="4"></textarea>
+          <label for="rsa_cipher">Ciphertext (Base64):</label>
+          <textarea id="rsa_cipher" name="rsa_cipher" rows="3"></textarea>
+        </div>
+    
+        <button id="submit-button" type="submit">Run</button>
+      </form>
     </div>
-
+    
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
+    </body>
 </html>

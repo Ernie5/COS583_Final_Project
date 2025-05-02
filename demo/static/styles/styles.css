@@ -168,3 +168,43 @@ button:hover {
     color: #ffffff;
     text-decoration: underline;
 }
+
+.hidden { display: none !important; }
+
+/* optional – make the Encrypt / Decrypt chooser match Nunito theme */
+fieldset {
+    border: none;                 /* remove default browser border */
+    margin-top: 20px;
+    padding: 0;
+}
+
+#op-fieldset label {
+    display: inline-block;
+    margin-right: 18px;
+    color: #ffdf91;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#op-fieldset input[type="radio"] {
+    margin-right: 6px;
+    accent-color: #ff914d;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background-color: #2a2f4a;
+    color: #ffffff;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    transition: 0.3s ease;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    background-color: #364164;
+    border: 1px solid #ff914d;
+}

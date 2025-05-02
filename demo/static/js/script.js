@@ -27,13 +27,13 @@ document.getElementById('algorithm-select').addEventListener('change', function 
     const submitButton = document.getElementById('submit-button');
 
     if (selectedAlgorithm === 'dh') {
-        heading.innerText = 'Demo Key Exchange';
+        heading.innerText = 'Diffie Hellman Demo Key Exchange';
         messageLabel.style.display = 'none';
         messageContent.style.display = 'none';
         messageContent.value = 'DH';
         submitButton.innerText = 'Demo';
     } else if (selectedAlgorithm === 'ml_kem') {
-        heading.innerText = 'Demo ML_KEM Key Exchange';
+        heading.innerText = 'ML_KEM Demo Key Exchange';
         messageLabel.style.display = 'none';
         messageContent.style.display = 'none';
         messageContent.value = 'ML_KEM';
@@ -44,4 +44,41 @@ document.getElementById('algorithm-select').addEventListener('change', function 
         messageContent.style.display = 'inline-block';messageContent.value = '';
         submitButton.innerText = 'Encrypt';
     }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const algoSel   = document.getElementById('algorithm-select');
+    const opSet     = document.getElementById('op-fieldset');
+    const opRadios  = [...document.getElementsByName('operation')];
+    const plainGrp  = document.getElementById('plain-group');
+    const aesExtra  = document.getElementById('aes-extra');
+    const rsaExtra  = document.getElementById('rsa-extra');
+
+    function refresh() {
+        const algo = algoSel.value;
+        const op   = opRadios.find(r => r.checked)?.value || 'encrypt';
+
+        const needsOp = (algo === 'aes' || algo === 'rsa');
+        // show / hide the Encrypt-Decrypt chooser
+        opSet.classList.toggle('hidden', !needsOp);
+
+        // ensure "encrypt" is selected when we hide the fieldset
+        if (!needsOp) opRadios.find(r => r.value === 'encrypt').checked = true;
+
+        // plaintext box only needed for encryption
+        const effectiveOp = needsOp ? op : 'encrypt';
+        plainGrp.style.display = (effectiveOp === 'encrypt') ? 'block' : 'none';
+
+        // AES / RSA specific decryption inputs
+        aesExtra.classList.toggle('hidden', !(algo === 'aes' && effectiveOp === 'decrypt'));
+        rsaExtra.classList.toggle('hidden', !(algo === 'rsa' && effectiveOp === 'decrypt'));
+    }
+
+    // initial state
+    refresh();
+
+    // listeners
+    algoSel.addEventListener('change', refresh);
+    opRadios.forEach(r => r.addEventListener('change', refresh));
 });
