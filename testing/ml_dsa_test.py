@@ -1,0 +1,129 @@
+"""
+ML-DSA-87 (Dilithium-5) benchmark          ────────────────
+Needs:   pip install oqs
+Relies on oqs.Signature API:
+
+    with oqs.Signature(alg) as sig:
+        pub_key  = sig.generate_keypair()         # returns bytes
+        sec_key  = sig.export_secret_key()        # optional
+        sig_bytes = sig.sign(msg_bytes)           # returns bytes
+        valid     = sig.verify(msg_bytes, sig_bytes, pub_key)
+
+We measure:
+  • key-pair generation
+  • signing and verification (avg over 'loops' runs)
+  • peak memory via tracemalloc
+  • “network” latency (send msg‖sig to a local server that verifies)
+"""
+import time
+import timeit
+import tracemalloc
+import socket
+import threading
+import sys
+import os
+
+import oqs
+
+ALG = "ML-DSA-87"           # Dilithium-5 level
+PORT = 9_995                # distinct port, avoids clashes
+LOOPS = 100                 # sign/verify repetitions
+
+
+# ------------------------------------------------------------------
+# SPEED TEST
+# ------------------------------------------------------------------
+def speed(msg: bytes, loops: int = LOOPS) -> None:
+    print("▶ SPEED")
+    with oqs.Signature(ALG) as signer:
+        keygen_t = timeit.timeit(signer.generate_keypair, number=1)
+        pub_key = signer.generate_keypair()               # keep keys
+        sign_avg = timeit.timeit(lambda: signer.sign(msg), number=loops)
+        sample_sig = signer.sign(msg)
+
+    with oqs.Signature(ALG) as verifier:
+        verify_avg = timeit.timeit(
+            lambda: verifier.verify(msg, sample_sig, pub_key),
+            number=loops,
+        )
+
+    print(f"  key-pair generation : {keygen_t:.3f}s")
+    print(f"  {loops:,} signs     → {sign_avg:.3f}s "
+          f"({sign_avg/loops:.6f}s each)")
+    print(f"  {loops:,} verifies  → {verify_avg:.3f}s "
+          f"({verify_avg/loops:.6f}s each)")
+
+
+# ------------------------------------------------------------------
+# MEMORY TEST
+# ------------------------------------------------------------------
+def memory(msg: bytes) -> None:
+    print("\n▶ MEMORY (tracemalloc)")
+    tracemalloc.start()
+    with oqs.Signature(ALG) as signer:
+        pub_key = signer.generate_keypair()
+        sig = signer.sign(msg)
+        curr, peak = tracemalloc.get_traced_memory()
+        print(f"  sign       → current {curr/1024:7.2f} KB   "
+              f"peak {peak/1024:7.2f} KB")
+
+    with oqs.Signature(ALG) as verifier:
+        _ = verifier.verify(msg, sig, pub_key)
+        curr, peak = tracemalloc.get_traced_memory()
+        print(f"  verify     → current {curr/1024:7.2f} KB   "
+              f"peak {peak/1024:7.2f} KB")
+    tracemalloc.stop()
+
+
+# ------------------------------------------------------------------
+# NETWORK + VERIFY TEST
+# ------------------------------------------------------------------
+def network(msg: bytes) -> None:
+    print("\n▶ NETWORK (localhost socket)")
+    with oqs.Signature(ALG) as signer:
+        pub_key = signer.generate_keypair()
+        sig = signer.sign(msg)
+
+    payload = msg + b'||' + sig
+    payload_len = len(payload)
+
+    # ------------- server task ------------------------------------
+    def server() -> None:
+        with socket.socket() as srv:
+            srv.bind(("localhost", PORT))
+            srv.listen(1)
+            conn, _ = srv.accept()
+            with conn:
+                data = conn.recv(payload_len)
+                m, s = data.split(b'||', 1)
+                with oqs.Signature(ALG) as ver:
+                    _ = ver.verify(m, s, pub_key)
+
+    srv_thread = threading.Thread(target=server, daemon=True)
+    srv_thread.start()
+
+    # ------------- timed client send ------------------------------
+    start = time.perf_counter()
+    with socket.socket() as cli:
+        cli.connect(("localhost", PORT))
+        cli.sendall(payload)
+    srv_thread.join()
+    elapsed = time.perf_counter() - start
+
+    print(f"  sent {payload_len:,} B in {elapsed:.6f}s  "
+          f"({payload_len/elapsed/1024:.2f} KB/s incl. server verify)")
+
+
+# ------------------------------------------------------------------
+# MAIN
+# ------------------------------------------------------------------
+def main() -> None:
+    msg = b"Post-Quantum Cryptography is the future!"
+    print(f"\n=== ML-DSA-87 Test Suite (Dilithium-5) ===\n")
+    speed(msg)
+    memory(msg)
+    network(msg)
+
+
+if __name__ == "__main__":
+    main()

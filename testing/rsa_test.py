@@ -1,3 +1,11 @@
+"""
+RSA benchmark (PKCS#1 v1.5, PEM keys)
+Requires rsa.py that exposes:
+    generate_keys(bits)              -> (public_pem: str, private_pem: str)
+    encrypt(msg_str, public_pem)     -> bytes   (ciphertext)
+    decrypt(cipher_bytes, priv_pem)  -> str     (plaintext)
+"""
+import time
 import timeit
 import tracemalloc
 import socket
@@ -5,88 +13,97 @@ import threading
 import sys
 import os
 
-# Setup import path
+# ---------------------------------------------------------------
+# local package import
+# ---------------------------------------------------------------
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(os.path.join(project_root, 'ClassicalCryptography'))
 
 from rsa import generate_keys, encrypt, decrypt
 
-# --- SPEED TEST ---
+# ---------------------------------------------------------------
+# SPEED TEST
+# ---------------------------------------------------------------
+def speed(message: str, bits: int, loops: int = 100) -> None:
+    print("▶ SPEED")
+    keygen_t = timeit.timeit(lambda: generate_keys(bits), number=1)
+    pub, priv = generate_keys(bits)
 
-def speed(message: str, bits: int = 2048):
-    print("Running RSA speed test...")
-    
-    keygen_time = timeit.timeit(lambda: generate_keys(bits), number=1)
-    pub_key, priv_key = generate_keys(bits)
+    enc_avg = timeit.timeit(lambda: encrypt(message, pub), number=loops)
+    sample_ct = encrypt(message, pub)
+    dec_avg = timeit.timeit(lambda: decrypt(sample_ct, priv), number=loops)
 
-    enc_time = timeit.timeit(lambda: encrypt(message, pub_key), number=100)
-    cipher = encrypt(message, pub_key)
-    dec_time = timeit.timeit(lambda: decrypt(cipher, priv_key), number=100)
+    print(f"  key-pair generation : {keygen_t:.3f}s")
+    print(f"  {loops:,} encrypt   → {enc_avg:.3f}s "
+          f"({enc_avg/loops:.6f}s each)")
+    print(f"  {loops:,} decrypt   → {dec_avg:.3f}s "
+          f"({dec_avg/loops:.6f}s each)")
 
-    print(f"Key generation time: {keygen_time:.6f} sec")
-    print(f"Avg encryption time: {enc_time / 100:.6f} sec")
-    print(f"Avg decryption time: {dec_time / 100:.6f} sec")
 
-# --- MEMORY TEST ---
-
-def memory(message: str, bits: int = 2048):
-    print("Running RSA memory test...")
+# ---------------------------------------------------------------
+# MEMORY TEST
+# ---------------------------------------------------------------
+def memory(message: str, bits: int) -> None:
+    print("\n▶ MEMORY (tracemalloc)")
     tracemalloc.start()
 
-    pub_key, priv_key = generate_keys(bits)
-    cipher = encrypt(message, pub_key)
-    current, peak = tracemalloc.get_traced_memory()
-    print(f"Encryption - Current: {current / 1024:.2f} KB, Peak: {peak / 1024:.2f} KB")
+    pub, priv = generate_keys(bits)
+    _ = encrypt(message, pub)
+    curr, peak = tracemalloc.get_traced_memory()
+    print(f"  encrypt  → current {curr/1024:7.2f} KB   peak {peak/1024:7.2f} KB")
 
-    _ = decrypt(cipher, priv_key)
-    current, peak = tracemalloc.get_traced_memory()
-    print(f"Decryption - Current: {current / 1024:.2f} KB, Peak: {peak / 1024:.2f} KB")
+    ct = encrypt(message, pub)
+    _ = decrypt(ct, priv)
+    curr, peak = tracemalloc.get_traced_memory()
+    print(f"  decrypt  → current {curr/1024:7.2f} KB   peak {peak/1024:7.2f} KB")
     tracemalloc.stop()
 
-# --- NETWORK TEST ---
 
-def network(message: str, bits: int = 2048):
-    print("Running RSA network test...")
-    pub_key, priv_key = generate_keys(bits)
-    cipher = encrypt(message, pub_key)
+# ---------------------------------------------------------------
+# NETWORK + DECRYPT TEST
+# ---------------------------------------------------------------
+def network(message: str, bits: int) -> None:
+    print("\n▶ NETWORK (localhost socket)")
+    pub, priv = generate_keys(bits)
+    ct_bytes = encrypt(message, pub)
+    payload_len = len(ct_bytes)  # same as modulus length in bytes
 
-    def server():
-        s = socket.socket()
-        s.bind(("localhost", 9996))
-        s.listen(1)
-        conn, _ = s.accept()
-        data = conn.recv(65536)
-        received_cipher = int(data.decode())
-        conn.close()
-        s.close()
+    # -------- server (decrypts after receive) --------------------
+    def server() -> None:
+        with socket.socket() as srv:
+            srv.bind(("localhost", 9_996))
+            srv.listen(1)
+            conn, _ = srv.accept()
+            with conn:
+                cipher = conn.recv(payload_len)
+                _ = decrypt(cipher, priv)
 
-        _ = decrypt(received_cipher, priv_key)
+    srv_thread = threading.Thread(target=server, daemon=True)
+    srv_thread.start()
 
-    server_thread = threading.Thread(target=server)
-    server_thread.start()
+    # -------- timed client send ---------------------------------
+    start = time.perf_counter()
+    with socket.socket() as cli:
+        cli.connect(("localhost", 9_996))
+        cli.sendall(ct_bytes)
+    srv_thread.join()
+    elapsed = time.perf_counter() - start
 
-    start = timeit.default_timer()
-    client_sock = socket.socket()
-    client_sock.connect(("localhost", 9996))
-    client_sock.send(str(cipher).encode())
-    client_sock.close()
-    server_thread.join()
-    end = timeit.default_timer()
+    print(f"  sent {payload_len} B in {elapsed:.6f}s  "
+          f"({payload_len/elapsed/1024:.2f} KB/s incl. server decrypt)")
 
-    print(f"Network + RSA decrypt latency: {end - start:.6f} sec")
 
-# --- MAIN ---
+# ---------------------------------------------------------------
+# MAIN
+# ---------------------------------------------------------------
+def main() -> None:
+    bits = 2048          # use 4096 for stronger security (slower)
+    msg  = "Benchmarking RSA performance with 2048-bit keys"
 
-def main():
-    test_message = "Benchmarking RSA performance with 2048-bit keys"
-    bits = 2048  # Use 4096 for stronger security, but 2048 is faster for testing
-
-    print(f"\n--- RSA Test Suite (key size: {bits}) ---\n")
-    speed(test_message, bits)
-    print()
-    memory(test_message, bits)
-    print()
-    network(test_message, bits)
+    print(f"\n=== RSA Test Suite  (modulus: {bits} bits) ===\n")
+    speed(msg, bits)
+    memory(msg, bits)
+    network(msg, bits)
 
 
 if __name__ == "__main__":

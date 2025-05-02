@@ -11,36 +11,32 @@
 - [x] ML-DSA
 - [x] SLH-DSA
 
-### Implementation of Quantum Algorithms
-- [ ] Shor's
-- [ ] Grover's
-
 ### Encryption Time Analysis
 - [x] AES-256
 - [x] DH-2048/4096
 - [x] RSA-2048/4096
 - [x] ECC-P256
-- [] ML-KEM
-- [] ML-DSA
-- [] SLH-DSA
+- [x] ML-KEM
+- [x] ML-DSA
+- [x] SLH-DSA
 
 ### Key Size Metrics (Bytes)
-- [] AES-256
-- [] DH-2048/4096
-- [] RSA-2048/4096
-- [] ECC-P256
-- [] ML-KEM
-- [] ML-DSA
-- [] SLH-DSA
+- [x] AES-256
+- [x] DH-2048/4096
+- [x] RSA-2048/4096
+- [x] ECC-P256
+- [x] ML-KEM
+- [x] ML-DSA
+- [x] SLH-DSA
 
 ### Network Metrics
 - [x] AES-256
 - [x] DH-2048/4096
 - [x] RSA-2048/4096
 - [x] ECC-P256
-- [] ML-KEM
-- [] ML-DSA
-- [] SLH-DSA
+- [x] ML-KEM
+- [x] ML-DSA
+- [x] SLH-DSA
 
 ## How to run this on your local machine
 
@@ -78,6 +74,33 @@ Ensure you have the following installed on your machine:
     pip install .
     ```
 
-4. **Run the Project**
-    Use the following commands to run the different encryption algorithms 
+4. **Run the Project Web App**
+    Use the following commands to run the application on your local machine
     
+    From the main project directory
+    ```
+    cd demo
+    python app.py
+    ```
+
+5. **Running the Performance Tests**
+    Use the following commands to run the tests from your local machine
+
+    From the main project directory
+    
+    ```
+    cd testing
+    python test.py
+    ```
+    
+    This test will run all of the tests at once however if one test appears to fail or not run properly, you can run the tests individually with the following commands.
+
+    ```
+    python aes_test.py
+    python dh_test.py
+    python ecc_test.py
+    python rsa_test.py
+    python ml_kem_test.py
+    python ml_dsa_test.py
+    python slh_dsa_test.py
+    ```

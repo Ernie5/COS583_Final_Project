@@ -1,3 +1,13 @@
+"""
+Diffie-Hellman (classical, multiplicative-group) benchmark
+– speed, memory, and network latency –
+Relies on  dh.py  that exposes:
+    generate_large_prime(bits)          -> int
+    DiffieHellman(g, p, bits)
+        .public_key       int
+        .compute_shared_secret(other_pk) -> int
+"""
+import time
 import timeit
 import tracemalloc
 import socket
@@ -5,90 +15,105 @@ import threading
 import sys
 import os
 
-# Get the absolute path to the root 'project' directory
+# ------------------------------------------------------------------
+# Local package import
+# ------------------------------------------------------------------
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-# Add 'utils' to the Python path
 sys.path.append(os.path.join(project_root, 'ClassicalCryptography'))
 
 from dh import DiffieHellman, generate_large_prime
 
-# --- SPEED TEST ---
+# ------------------------------------------------------------------
+# SPEED TEST
+# ------------------------------------------------------------------
+def speed(bits: int, g: int, loops: int = 100) -> None:
+    print("▶ SPEED")
+    p = generate_large_prime(bits)
 
-def speed(key_size, generator):
-    print("Running DH speed test...")
-    prime = generate_large_prime(key_size)
-    
-    enc_time = timeit.timeit(lambda: DiffieHellman(generator, prime, key_size), number=100)
-    alice = DiffieHellman(generator, prime, key_size)
-    bob = DiffieHellman(generator, prime, key_size)
-    dec_time = timeit.timeit(lambda: alice.compute_shared_secret(bob.public_key), number=100)
-    
-    print(f"Avg key generation time: {enc_time/100:.6f} sec")
-    print(f"Avg shared secret compute time: {dec_time/100:.6f} sec")
+    # key-pair generation
+    gen_avg = timeit.timeit(lambda: DiffieHellman(g, p, bits),
+                            number=loops)
 
-# --- MEMORY TEST ---
+    # shared-secret computation
+    alice = DiffieHellman(g, p, bits)
+    bob   = DiffieHellman(g, p, bits)
+    ss_avg = timeit.timeit(lambda: alice.compute_shared_secret(bob.public_key),
+                           number=loops)
 
-def memory(key_size, generator):
-    print("Running DH memory test...")
-    prime = generate_large_prime(key_size)
-    
+    print(f"  {loops:,} keypair inits   →  {gen_avg:.3f}s "
+          f"({gen_avg/loops:.6f}s each)")
+    print(f"  {loops:,} shared-secrets  →  {ss_avg:.3f}s "
+          f"({ss_avg/loops:.6f}s each)")
+
+
+# ------------------------------------------------------------------
+# MEMORY TEST
+# ------------------------------------------------------------------
+def memory(bits: int, g: int) -> None:
+    print("\n▶ MEMORY (tracemalloc)")
+    p = generate_large_prime(bits)
+
     tracemalloc.start()
-    alice = DiffieHellman(generator, prime, key_size)
-    bob = DiffieHellman(generator, prime, key_size)
-    current, peak = tracemalloc.get_traced_memory()
-    print(f"Key generation - Current: {current / 1024:.2f} KB, Peak: {peak / 1024:.2f} KB")
-    
+    alice = DiffieHellman(g, p, bits)
+    bob   = DiffieHellman(g, p, bits)
+    curr, peak = tracemalloc.get_traced_memory()
+    print(f"  keypair gen  → current {curr/1024:7.2f} KB   "
+          f"peak {peak/1024:7.2f} KB")
+
     _ = alice.compute_shared_secret(bob.public_key)
-    current, peak = tracemalloc.get_traced_memory()
-    print(f"Shared secret - Current: {current / 1024:.2f} KB, Peak: {peak / 1024:.2f} KB")
+    curr, peak = tracemalloc.get_traced_memory()
+    print(f"  shared secret→ current {curr/1024:7.2f} KB   "
+          f"peak {peak/1024:7.2f} KB")
     tracemalloc.stop()
 
-# --- NETWORK TEST ---
 
-def network(key_size, generator):
-    print("Running DH network test...")
-    prime = generate_large_prime(key_size)
-    alice = DiffieHellman(generator, prime, key_size)
-    
-    def server():
-        s = socket.socket()
-        s.bind(("localhost", 9998))
-        s.listen(1)
-        conn, _ = s.accept()
-        data = conn.recv(4096)
-        bob_public = int(data.decode())
-        conn.close()
-        s.close()
+# ------------------------------------------------------------------
+# NETWORK TEST
+# ------------------------------------------------------------------
+def network(bits: int, g: int) -> None:
+    print("\n▶ NETWORK (localhost socket)")
+    p = generate_large_prime(bits)
+    alice = DiffieHellman(g, p, bits)
+    pk_bytes = str(alice.public_key).encode()
+    payload_len = len(pk_bytes)
 
-        bob = DiffieHellman(generator, prime, key_size)
-        _ = bob.compute_shared_secret(bob_public)
+    # ------------ server task --------------------------------------
+    def server() -> None:
+        with socket.socket() as srv:
+            srv.bind(("localhost", 9_998))
+            srv.listen(1)
+            conn, _ = srv.accept()
+            with conn:
+                bob_pk = int(conn.recv(payload_len).decode())
+                bob = DiffieHellman(g, p, bits)
+                _ = bob.compute_shared_secret(bob_pk)
 
-    server_thread = threading.Thread(target=server)
-    server_thread.start()
+    # ------------ timed client/server ------------------------------
+    srv_thread = threading.Thread(target=server, daemon=True)
+    srv_thread.start()
 
-    start = timeit.default_timer()
-    client_sock = socket.socket()
-    client_sock.connect(("localhost", 9998))
-    client_sock.send(str(alice.public_key).encode())
-    client_sock.close()
-    server_thread.join()
-    end = timeit.default_timer()
+    start = time.perf_counter()
+    with socket.socket() as cli:
+        cli.connect(("localhost", 9_998))
+        cli.sendall(pk_bytes)
+    srv_thread.join()
+    elapsed = time.perf_counter() - start
 
-    print(f"Network + DH compute latency: {end - start:.6f} sec")
+    print(f"  sent {payload_len:,} B in {elapsed:.6f}s  "
+          f"({payload_len/elapsed/1024:.2f} KB/s, incl. server DH)")
 
-# --- MAIN ---
 
-def main():
-    key_size = 512  # Strong enough for demo
-    generator = 2
+# ------------------------------------------------------------------
+# MAIN
+# ------------------------------------------------------------------
+def main() -> None:
+    bits, g = 512, 2        # 512-bit prime for demo, generator 2
 
-    print(f"\n--- Diffie-Hellman Test Suite (key size: {key_size}) ---\n")
-    speed(key_size, generator)
-    print()
-    memory(key_size, generator)
-    print()
-    network(key_size, generator)
+    print(f"\n=== Diffie-Hellman Test Suite  (prime bits: {bits}) ===\n")
+    speed(bits, g)
+    memory(bits, g)
+    network(bits, g)
+
 
 if __name__ == "__main__":
     main()

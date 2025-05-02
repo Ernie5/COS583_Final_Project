@@ -99,9 +99,9 @@ if __name__ == "__main__":
     public_pem, private_pem = generate_keys()
 
     message = "Hello, RSA-4096!"
-    # print(f"\n🔐 Public Key PEM:\n{public_pem}")
+    # print(f"\n Public Key PEM:\n{public_pem}")
     print(str_public(public_pem))
-    # print(f"\n🔒 Private Key PEM:\n{private_pem}")
+    # print(f"\n Private Key PEM:\n{private_pem}")
     print(str_private(private_pem))
 
     cipher = encrypt(message, public_pem)
@@ -111,6 +111,6 @@ if __name__ == "__main__":
 
     decrypted_message = decrypt(cipher, private_pem)
 
-    print("\n✅ Original Message:", message)
-    print("🧾 Encrypted (Base64):", cipher_b64)
-    print("🔓 Decrypted Message:", decrypted_message)
+    print("\n Original Message:", message)
+    print(" Encrypted (Base64):", cipher_b64)
+    print(" Decrypted Message:", decrypted_message)

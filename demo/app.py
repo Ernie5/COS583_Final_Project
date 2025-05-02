@@ -13,7 +13,7 @@ sys.path.append(os.path.join(project_root, 'ClassicalCryptography'))
 sys.path.append(os.path.join(project_root, 'PostQuantumCryptography'))
 
 # Import your crypto modules
-import aes_simple as aes, rsa, dh, ecc
+import aes, rsa, dh, ecc
 import ml_kem, ml_dsa, slh_dsa
 
 @app.route('/')
