@@ -64,15 +64,69 @@ Ensure you have the following installed on your machine:
     ```
 
 
-3. **Install Dependencies**
-    Install `cmake` from `https://cmake.org/download/`.
-    Then run the following command to install required libraries:
+3. **Install Dependencies**  
+   Install `cmake` from [https://cmake.org/download/](https://cmake.org/download/).
+
+    a. Install Python requirements:
+
+        ```
+        pip install -r requirements.txt
+        cd liboqs-python
+        pip install .
+        ```
+
+    b. (MacOS Only) Manual Installation of liboqs and liboqs-python:
     
-    ```
-    pip install -r requirements.txt
-    cd liboqs-python
-    pip install .
-    ```
+        ```
+        brew install cmake ninja openssl
+        python3 --version
+        git --version
+        brew install python git
+
+        # Clone liboqs repo
+
+        git clone --depth=1 [https://github.com/open-quantum-safe/liboqs](https://github.com/open-quantum-safe/liboqs)
+
+        # Configure the build
+
+        cmake -S liboqs -B liboqs/build -DBUILD\_SHARED\_LIBS=ON
+
+        # Build using all available cores
+
+        cmake --build liboqs/build --parallel 8
+
+        # Install it (may prompt for password)
+
+        sudo cmake --build liboqs/build --target install
+
+        # Set dynamic library path
+
+        export DYLD\_LIBRARY\_PATH=/usr/local/lib:\$DYLD\_LIBRARY\_PATH
+
+        # Create and activate a virtual environment
+
+        python3 -m venv venv
+        source venv/bin/activate
+
+        # Upgrade pip and install packaging tools
+
+        python3 -m ensurepip --upgrade
+
+        # Clone the Python wrapper
+
+        git clone --depth=1 [https://github.com/open-quantum-safe/liboqs-python](https://github.com/open-quantum-safe/liboqs-python)
+        cd liboqs-python
+
+        # Optional: Update `pyproject.toml` to use version 0.13.0 if needed
+
+        # (Change `liboqs` version from 0.12.0 to 0.13.0 inside the file)
+
+        # Install the wrapper into your venv
+
+        pip install .
+
+        ```
+
 
 4. **Run the Project Web App**
     Use the following commands to run the application on your local machine
