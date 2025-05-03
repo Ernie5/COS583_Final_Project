@@ -1,11 +1,3 @@
-"""
-NIST P-256 (ECDSA) benchmark
-Depends on ecc.py that exposes:
-    ECC_P256()
-        .sign(msg_bytes)           -> bytes (DER-encoded sig)
-        .verify(msg_bytes, sig)    -> bool
-        .public_key                VerifyingKey
-"""
 import time
 import timeit
 import tracemalloc
@@ -38,7 +30,6 @@ def speed(message: bytes, loops: int = 100) -> None:
     print(f"  {loops:,} verifies→ {ver_avg:.3f}s "
           f"({ver_avg/loops:.6f}s each)")
 
-
 # ---------------------------------------------------------------
 # MEMORY TEST
 # ---------------------------------------------------------------
@@ -55,7 +46,6 @@ def memory(message: bytes) -> None:
     curr, peak = tracemalloc.get_traced_memory()
     print(f"  verify    → current {curr/1024:7.2f} KB   peak {peak/1024:7.2f} KB")
     tracemalloc.stop()
-
 
 # ---------------------------------------------------------------
 # NETWORK + VERIFY TEST
@@ -77,7 +67,7 @@ def network(message: bytes) -> None:
                 data = conn.recv(payload_len)
                 msg, sig = data.split(b'||', 1)
                 verifier = ECC_P256()
-                verifier.public_key = ecc.public_key   # share pubkey
+                verifier.public_key = ecc.public_key
                 _ = verifier.verify(msg, sig)
 
     srv_thread = threading.Thread(target=server, daemon=True)
@@ -94,7 +84,6 @@ def network(message: bytes) -> None:
     print(f"  sent {payload_len} B in {elapsed:.6f}s  "
           f"({payload_len/elapsed/1024:.2f} KB/s incl. server verify)")
 
-
 # ---------------------------------------------------------------
 # MAIN
 # ---------------------------------------------------------------
@@ -104,7 +93,6 @@ def main() -> None:
     speed(msg)
     memory(msg)
     network(msg)
-
 
 if __name__ == "__main__":
     main()

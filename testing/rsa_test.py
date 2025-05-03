@@ -1,10 +1,3 @@
-"""
-RSA benchmark (PKCS#1 v1.5, PEM keys)
-Requires rsa.py that exposes:
-    generate_keys(bits)              -> (public_pem: str, private_pem: str)
-    encrypt(msg_str, public_pem)     -> bytes   (ciphertext)
-    decrypt(cipher_bytes, priv_pem)  -> str     (plaintext)
-"""
 import time
 import timeit
 import tracemalloc
@@ -39,7 +32,6 @@ def speed(message: str, bits: int, loops: int = 100) -> None:
     print(f"  {loops:,} decrypt   → {dec_avg:.3f}s "
           f"({dec_avg/loops:.6f}s each)")
 
-
 # ---------------------------------------------------------------
 # MEMORY TEST
 # ---------------------------------------------------------------
@@ -58,7 +50,6 @@ def memory(message: str, bits: int) -> None:
     print(f"  decrypt  → current {curr/1024:7.2f} KB   peak {peak/1024:7.2f} KB")
     tracemalloc.stop()
 
-
 # ---------------------------------------------------------------
 # NETWORK + DECRYPT TEST
 # ---------------------------------------------------------------
@@ -66,7 +57,7 @@ def network(message: str, bits: int) -> None:
     print("\n▶ NETWORK (localhost socket)")
     pub, priv = generate_keys(bits)
     ct_bytes = encrypt(message, pub)
-    payload_len = len(ct_bytes)  # same as modulus length in bytes
+    payload_len = len(ct_bytes)
 
     # -------- server (decrypts after receive) --------------------
     def server() -> None:
@@ -92,19 +83,17 @@ def network(message: str, bits: int) -> None:
     print(f"  sent {payload_len} B in {elapsed:.6f}s  "
           f"({payload_len/elapsed/1024:.2f} KB/s incl. server decrypt)")
 
-
 # ---------------------------------------------------------------
 # MAIN
 # ---------------------------------------------------------------
 def main() -> None:
-    bits = 2048          # use 4096 for stronger security (slower)
+    bits = 2048
     msg  = "Benchmarking RSA performance with 2048-bit keys"
 
     print(f"\n=== RSA Test Suite  (modulus: {bits} bits) ===\n")
     speed(msg, bits)
     memory(msg, bits)
     network(msg, bits)
-
 
 if __name__ == "__main__":
     main()

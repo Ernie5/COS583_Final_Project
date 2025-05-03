@@ -1,9 +1,8 @@
 from Crypto.Util.number import getPrime, inverse
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
-from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 import base64
-
 
 def generate_keys(bits=4096):
     """Generate RSA keys as (n, e), (n, d), and convert to PEM."""
@@ -14,12 +13,10 @@ def generate_keys(bits=4096):
     phi = (p - 1) * (q - 1)
     d = inverse(e, phi)
 
-    # Compute CRT parameters
     dmp1 = d % (p - 1)
     dmq1 = d % (q - 1)
     iqmp = inverse(q, p)
 
-    # Build key objects from raw numbers
     pub_numbers = rsa.RSAPublicNumbers(e, n)
     priv_numbers = rsa.RSAPrivateNumbers(
         p=p, q=q, d=d, dmp1=dmp1, dmq1=dmq1, iqmp=iqmp,
@@ -45,23 +42,17 @@ def generate_keys(bits=4096):
 
 def str_public(public_pem):
     public_pem_str = public_pem.replace('\n', '')
-    # Calculate positions
     first_nl_pos = 26
     second_nl_pos = len(public_pem_str) - 24
-    # Insert the second newline first to preserve index position
     public_pem_str = public_pem_str[:second_nl_pos] + '\n' + public_pem_str[second_nl_pos:]
-    # Adjust the first position if needed due to inserted newline
     public_pem_str = public_pem_str[:first_nl_pos] + '\n' + public_pem_str[first_nl_pos:]
     return public_pem_str
 
 def str_private(private_pem):
     private_pem_str = private_pem.replace('\n', '')
-    # Calculate positions
     first_nl_pos = 31
     second_nl_pos = len(private_pem_str) - 29
-    # Insert the second newline first to preserve index position
     private_pem_str = private_pem_str[:second_nl_pos] + '\n' + private_pem_str[second_nl_pos:]
-    # Adjust the first position if needed due to inserted newline
     private_pem_str = private_pem_str[:first_nl_pos] + '\n' + private_pem_str[first_nl_pos:]
     return private_pem_str
 
@@ -76,7 +67,6 @@ def encrypt(message, public_pem):
         padding.PKCS1v15()
     )
     return ciphertext
-
 
 def decrypt(ciphertext, private_pem):
     """Decrypt a message using PEM private key."""
@@ -93,24 +83,3 @@ def decrypt(ciphertext, private_pem):
 
 def encode_cipher(cipher):
     return base64.b64encode(cipher).decode()
-
-# Example usage
-if __name__ == "__main__":
-    public_pem, private_pem = generate_keys()
-
-    message = "Hello, RSA-4096!"
-    # print(f"\n Public Key PEM:\n{public_pem}")
-    print(str_public(public_pem))
-    # print(f"\n Private Key PEM:\n{private_pem}")
-    print(str_private(private_pem))
-
-    cipher = encrypt(message, public_pem)
-
-    # Convert encrypted bytes to base64 for display
-    cipher_b64 = encode_cipher(cipher)
-
-    decrypted_message = decrypt(cipher, private_pem)
-
-    print("\n Original Message:", message)
-    print(" Encrypted (Base64):", cipher_b64)
-    print(" Decrypted Message:", decrypted_message)

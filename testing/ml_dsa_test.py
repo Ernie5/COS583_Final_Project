@@ -1,20 +1,3 @@
-"""
-ML-DSA-87 (Dilithium-5) benchmark          ────────────────
-Needs:   pip install oqs
-Relies on oqs.Signature API:
-
-    with oqs.Signature(alg) as sig:
-        pub_key  = sig.generate_keypair()         # returns bytes
-        sec_key  = sig.export_secret_key()        # optional
-        sig_bytes = sig.sign(msg_bytes)           # returns bytes
-        valid     = sig.verify(msg_bytes, sig_bytes, pub_key)
-
-We measure:
-  • key-pair generation
-  • signing and verification (avg over 'loops' runs)
-  • peak memory via tracemalloc
-  • “network” latency (send msg‖sig to a local server that verifies)
-"""
 import time
 import timeit
 import tracemalloc
@@ -26,9 +9,8 @@ import os
 import oqs
 
 ALG = "ML-DSA-87"           # Dilithium-5 level
-PORT = 9_995                # distinct port, avoids clashes
-LOOPS = 100                 # sign/verify repetitions
-
+PORT = 9_995
+LOOPS = 100
 
 # ------------------------------------------------------------------
 # SPEED TEST
@@ -37,7 +19,7 @@ def speed(msg: bytes, loops: int = LOOPS) -> None:
     print("▶ SPEED")
     with oqs.Signature(ALG) as signer:
         keygen_t = timeit.timeit(signer.generate_keypair, number=1)
-        pub_key = signer.generate_keypair()               # keep keys
+        pub_key = signer.generate_keypair()
         sign_avg = timeit.timeit(lambda: signer.sign(msg), number=loops)
         sample_sig = signer.sign(msg)
 
@@ -52,7 +34,6 @@ def speed(msg: bytes, loops: int = LOOPS) -> None:
           f"({sign_avg/loops:.6f}s each)")
     print(f"  {loops:,} verifies  → {verify_avg:.3f}s "
           f"({verify_avg/loops:.6f}s each)")
-
 
 # ------------------------------------------------------------------
 # MEMORY TEST
@@ -73,7 +54,6 @@ def memory(msg: bytes) -> None:
         print(f"  verify     → current {curr/1024:7.2f} KB   "
               f"peak {peak/1024:7.2f} KB")
     tracemalloc.stop()
-
 
 # ------------------------------------------------------------------
 # NETWORK + VERIFY TEST
@@ -113,7 +93,6 @@ def network(msg: bytes) -> None:
     print(f"  sent {payload_len:,} B in {elapsed:.6f}s  "
           f"({payload_len/elapsed/1024:.2f} KB/s incl. server verify)")
 
-
 # ------------------------------------------------------------------
 # MAIN
 # ------------------------------------------------------------------
@@ -123,7 +102,6 @@ def main() -> None:
     speed(msg)
     memory(msg)
     network(msg)
-
 
 if __name__ == "__main__":
     main()

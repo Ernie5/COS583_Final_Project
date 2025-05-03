@@ -1,10 +1,3 @@
-"""
-AES-256 (ECB/PKCS#5) – speed, memory, and network tests
-Compatible with aes.py that exposes:
-    generate_printable_key()  -> str  (32 printable ASCII chars)
-    encrypt(plaintext, key)   -> Base64 str
-    decrypt(ciphertext, key)  -> plaintext str
-"""
 import base64
 import time
 import timeit
@@ -28,7 +21,6 @@ def _prep_key() -> tuple[str, bytes]:
     printable = generate_printable_key()           # 32 ASCII chars
     return printable, printable.encode()           # ASCII -> bytes
 
-
 # -----------------------------------------------------------------
 # SPEED TEST
 # -----------------------------------------------------------------
@@ -42,7 +34,6 @@ def speed(plaintext: str, key: bytes, iterations: int = 1_000) -> None:
           f"({enc_avg/iterations:.6f}s each)")
     print(f"  {iterations:,}   decrypt calls → {dec_avg:.3f}s  "
           f"({dec_avg/iterations:.6f}s each)")
-
 
 # -----------------------------------------------------------------
 # MEMORY TEST
@@ -63,7 +54,6 @@ def memory(plaintext: str, key: bytes) -> None:
     print(f"  decrypt → current {curr/1024:7.2f} KB   peak {peak/1024:7.2f} KB")
 
     tracemalloc.stop()
-
 
 # -----------------------------------------------------------------
 # NETWORK TEST
@@ -97,7 +87,6 @@ def network(plaintext: str, key: bytes) -> None:
     print(f"  sent {payload_len:,} B in {elapsed:.6f}s  "
           f"({payload_len/elapsed/1024:.2f} KB/s)")
 
-
 # -----------------------------------------------------------------
 # MAIN
 # -----------------------------------------------------------------
@@ -111,7 +100,6 @@ def main() -> None:
     speed(msg, key)
     memory(msg, key)
     network(msg, key)
-
 
 if __name__ == "__main__":
     main()

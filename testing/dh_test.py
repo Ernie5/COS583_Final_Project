@@ -1,12 +1,3 @@
-"""
-Diffie-Hellman (classical, multiplicative-group) benchmark
-– speed, memory, and network latency –
-Relies on  dh.py  that exposes:
-    generate_large_prime(bits)          -> int
-    DiffieHellman(g, p, bits)
-        .public_key       int
-        .compute_shared_secret(other_pk) -> int
-"""
 import time
 import timeit
 import tracemalloc
@@ -45,7 +36,6 @@ def speed(bits: int, g: int, loops: int = 100) -> None:
     print(f"  {loops:,} shared-secrets  →  {ss_avg:.3f}s "
           f"({ss_avg/loops:.6f}s each)")
 
-
 # ------------------------------------------------------------------
 # MEMORY TEST
 # ------------------------------------------------------------------
@@ -65,7 +55,6 @@ def memory(bits: int, g: int) -> None:
     print(f"  shared secret→ current {curr/1024:7.2f} KB   "
           f"peak {peak/1024:7.2f} KB")
     tracemalloc.stop()
-
 
 # ------------------------------------------------------------------
 # NETWORK TEST
@@ -102,18 +91,16 @@ def network(bits: int, g: int) -> None:
     print(f"  sent {payload_len:,} B in {elapsed:.6f}s  "
           f"({payload_len/elapsed/1024:.2f} KB/s, incl. server DH)")
 
-
 # ------------------------------------------------------------------
 # MAIN
 # ------------------------------------------------------------------
 def main() -> None:
-    bits, g = 512, 2        # 512-bit prime for demo, generator 2
+    bits, g = 512, 2
 
     print(f"\n=== Diffie-Hellman Test Suite  (prime bits: {bits}) ===\n")
     speed(bits, g)
     memory(bits, g)
     network(bits, g)
-
 
 if __name__ == "__main__":
     main()

@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
-# app.py
-# Flask crypto playground – now with decrypt support for AES-256-ECB and RSA.
-
 from flask import Flask, render_template, request, send_file
 import base64
 import oqs
 import os, sys
 from io import BytesIO
+import textwrap, re
+from Crypto.PublicKey import RSA as CryptoRSA
 
 # ───────────────────────────────────────
 #  Local imports (your existing modules)
@@ -16,12 +14,7 @@ sys.path.append(os.path.join(project_root, 'ClassicalCryptography'))
 sys.path.append(os.path.join(project_root, 'PostQuantumCryptography'))
 
 import aes, rsa, dh, ecc                       # classical
-import ml_kem, ml_dsa, slh_dsa                 # PQC
 
-# Helpers for RSA PEM ⇆ key objects
-from Crypto.PublicKey import RSA as CryptoRSA
-
-import textwrap, re
 
 def sanitize_pem(pem: str, is_private=True) -> str:
     """
@@ -73,9 +66,9 @@ def index():
 # ───────────────────────────────────────
 @app.route('/crypto', methods=['POST'])
 def crypto():
-    algorithm = request.form['algorithm']        # aes, rsa, ecc, …
+    algorithm = request.form['algorithm']
     operation = request.form.get('operation', 'encrypt')
-    message   = request.form.get('message', '')  # may be blank for decrypt paths
+    message   = request.form.get('message', '')
     result    = {}
 
     # ──────────── AES (ECB) ────────────
@@ -125,12 +118,12 @@ def crypto():
 
         else:  # decrypt
             # grab user inputs
-            cipher_b64 = request.form['rsa_cipher']           # Base64 string
-            priv_pem   = sanitize_pem(request.form['rsa_priv'])  # fixed-up PEM
+            cipher_b64 = request.form['rsa_cipher']
+            priv_pem   = sanitize_pem(request.form['rsa_priv'])
 
             try:
-                cipher_raw = rsa.decode_cipher(cipher_b64)    # bytes
-                plaintext  = rsa.decrypt(cipher_raw, priv_pem)  # use PEM string
+                cipher_raw = rsa.decode_cipher(cipher_b64)
+                plaintext  = rsa.decrypt(cipher_raw, priv_pem)
 
                 result = {
                     'Algorithm'           : 'RSA',

@@ -16,7 +16,6 @@ def main():
     # RSA
     rsa_test.main()
 
-
     # ECC
     ecc_test.main()
 

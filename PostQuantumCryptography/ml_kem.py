@@ -9,37 +9,29 @@ def benchmark(func, *args):
     return result, end - start
 
 def ml_kem_demo():
-    kem_alg = "ML-KEM-1024"  # You can also try "ML-KEM-512" or "ML-KEM-768"
+    kem_alg = "ML-KEM-1024"
 
     print(f" Using PQC Algorithm: {kem_alg}")
 
-    # Step 1: Key Generation
     with oqs.KeyEncapsulation(kem_alg) as server:
         public_key, keygen_time = benchmark(server.generate_keypair)
 
         print(f" Key Generation: {keygen_time:.6f} seconds")
 
-        # Step 2: Client Encrypts a Shared Secret
         with oqs.KeyEncapsulation(kem_alg) as client:
             (ciphertext, shared_secret_enc), encap_time = benchmark(client.encap_secret, public_key)
 
         print(f" Encryption (Encapsulation): {encap_time:.6f} seconds")
 
-        # Step 3: Server Decrypts the Shared Secret
         shared_secret_dec, decap_time = benchmark(server.decap_secret, ciphertext)
 
         print(f" Decryption (Decapsulation): {decap_time:.6f} seconds")
 
-        # Debug output
         print(f"\n Shared Secret (Encapsulated):   {shared_secret_enc.hex()}")
         print(f" Shared Secret (Decapsulated):   {shared_secret_dec.hex()}")
 
         assert shared_secret_enc == shared_secret_dec, " Key Encapsulation Failed!"
         print("\n ML-KEM Key Encapsulation Successful!")
 
-        # Displaying important details (truncated for readability)
         print(f"\n Public Key (truncated): {public_key.hex()[:64]}...")
         print(f" Ciphertext (truncated): {ciphertext.hex()[:64]}...")
-
-# Run the test
-# ml_kem_demo()

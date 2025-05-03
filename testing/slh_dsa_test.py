@@ -1,23 +1,13 @@
-"""
-SPHINCS+ benchmark  (variant:  SPHINCS+-SHAKE-256s-simple)  ────────────────
-Needs:  pip install oqs
-Measures:
-  • key-pair generation
-  • signing / verification (avg over LOOPS runs)
-  • peak memory with tracemalloc
-  • “network” latency: client sends msg‖sig; server verifies
-"""
 import time
 import timeit
 import tracemalloc
 import socket
 import threading
-
 import oqs
 
 ALG   = "SPHINCS+-SHAKE-256s-simple"
-PORT  = 9_993                # unique port – won’t clash with earlier tests
-LOOPS = 50                   # fewer loops: SPHINCS+ signatures are heavy
+PORT  = 9_993
+LOOPS = 50
 
 # ------------------------------------------------------------------
 # SPEED TEST
@@ -43,7 +33,6 @@ def speed(msg: bytes, loops: int = LOOPS) -> None:
     print(f"  {loops:,} verifies  → {verify_avg:.3f}s "
           f"({verify_avg/loops:.6f}s each)")
 
-
 # ------------------------------------------------------------------
 # MEMORY TEST
 # ------------------------------------------------------------------
@@ -63,7 +52,6 @@ def memory(msg: bytes) -> None:
         print(f"  verify     → current {curr/1024:7.2f} KB   "
               f"peak {peak/1024:7.2f} KB")
     tracemalloc.stop()
-
 
 # ------------------------------------------------------------------
 # NETWORK + VERIFY TEST
@@ -103,7 +91,6 @@ def network(msg: bytes) -> None:
     print(f"  sent {payload_len:,} B in {elapsed:.6f}s  "
           f"({payload_len/elapsed/1024:.2f} KB/s incl. server verify)")
 
-
 # ------------------------------------------------------------------
 # MAIN
 # ------------------------------------------------------------------
@@ -113,7 +100,6 @@ def main() -> None:
     speed(msg)
     memory(msg)
     network(msg)
-
 
 if __name__ == "__main__":
     main()
