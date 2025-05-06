@@ -6,7 +6,7 @@ class DiffieHellman:
         self.key_size = key_size
         self.generator = generator
         self.prime = prime
-        print(key_size, generator, prime)
+        #print(key_size, generator, prime)
         self.private_key = secrets.randbits(key_size)
         self.public_key = pow(self.generator, self.private_key, self.prime)
     
@@ -17,7 +17,6 @@ class DiffieHellman:
         return self.public_key
 
     def compute_shared_secret(self, other_public_key):
-        print('computing shared secret')
         return pow(other_public_key, self.private_key, self.prime)
 
 def generate_large_prime(key_size):

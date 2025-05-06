@@ -54,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const plainGrp  = document.getElementById('plain-group');
     const aesExtra  = document.getElementById('aes-extra');
     const rsaExtra  = document.getElementById('rsa-extra');
+    const submitButton = document.getElementById('submit-button');
 
     function refresh() {
         const algo = algoSel.value;
@@ -73,6 +74,15 @@ document.addEventListener("DOMContentLoaded", () => {
         // AES / RSA specific decryption inputs
         aesExtra.classList.toggle('hidden', !(algo === 'aes' && effectiveOp === 'decrypt'));
         rsaExtra.classList.toggle('hidden', !(algo === 'rsa' && effectiveOp === 'decrypt'));
+
+        const encrypt_decrypt_algos = ['aes', 'rsa', 'ecc', 'ml_dsa', 'slh_dsa'];
+        if (encrypt_decrypt_algos.includes(algo) && effectiveOp === 'encrypt') {
+            submitButton.innerText = 'Encrypt';
+        } else if (encrypt_decrypt_algos.includes(algo)) {
+            submitButton.innerText = 'Decrypt';
+        } else {
+            submitButton.innerText = 'Demo';
+        }
     }
 
     // initial state

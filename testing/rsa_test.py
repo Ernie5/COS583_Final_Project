@@ -87,8 +87,8 @@ def network(message: str, bits: int) -> None:
 # MAIN
 # ---------------------------------------------------------------
 def main() -> None:
-    bits = 2048
-    msg  = "Benchmarking RSA performance with 2048-bit keys"
+    bits = 4096
+    msg  = "Benchmarking RSA performance with 4096-bit keys"
 
     print(f"\n=== RSA Test Suite  (modulus: {bits} bits) ===\n")
     speed(msg, bits)
